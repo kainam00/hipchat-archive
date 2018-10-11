@@ -1,9 +1,9 @@
-'''Requirements'''
+Requirements
 * python2.6 or newer
 * json module
 * requests module
 
-'''Running'''
+Running
 
 Clone this into a directory of your choosing and run the following for an explanation of the arguments:
 
