@@ -1,4 +1,4 @@
-#!/usr/bin/env python2.6
+#!/usr/bin/env python2.7
 
 import json, sys, getopt, calendar, time, os, requests
 from pprint import pprint
@@ -38,7 +38,7 @@ class hipChat:
     def getMessages(self, room, date, startIndex):
         try: 
             s = requests.Session()
-            response = s.get('https://' + self.hostname + '/v2/room/' + room + '/history?auth_token=' + self.token + '&max-results=1000&date=2018-10-09&start-index='+str(startIndex))
+            response = s.get('https://' + self.hostname + '/v2/room/' + room + '/history?auth_token=' + self.token + '&max-results=1000&date=' + startDate + '&start-index='+str(startIndex))
             verboseOut(response.text)
         except:
             print "CRITICAL - Unable to get response from " + hostname
@@ -101,11 +101,15 @@ session = hipChat(hostname, token)
 messages = session.getMessages(room,startDate,startIndex)
 
 # If the number of messages we recieved is greater than zero, keep repeating
-while (len(messages['items']) > 0) and (startIndex < maxMessages):
-    # write the current buffer into the output
-    output.append(messages['items'])
-    startIndex = startIndex+1000
-    verboseOut("Got " + str(startIndex) + " messages from " + room)
-    messages = session.getMessages(room,startDate,startIndex)
+try:
+    while (len(messages['items']) > 0) and (startIndex < maxMessages):
+        # write the current buffer into the output
+        output.append(messages['items'])
+        startIndex = startIndex+1000
+        verboseOut("Got " + str(startIndex) + " messages from " + room)
+        messages = session.getMessages(room,startDate,startIndex)
+except KeyError:
+    print("ERROR: invalid json recieved. Maybe we're done?\n")
+    print messages
 
 print json.dumps(output, indent=4, separators=(',',': '))
