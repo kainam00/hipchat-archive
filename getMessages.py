@@ -101,15 +101,23 @@ session = hipChat(hostname, token)
 messages = session.getMessages(room,startDate,startIndex)
 
 # If the number of messages we recieved is greater than zero, keep repeating
+counter = 0
 try:
     while (len(messages['items']) > 0) and (startIndex < maxMessages):
         # write the current buffer into the output
         output.append(messages['items'])
         startIndex = startIndex+1000
         verboseOut("Got " + str(startIndex) + " messages from " + room)
+        # Handle rate limiting, we're only allowed 500 requests in 5 mintutes
+        # So if we're close to hitting the limit, wait 5 minutes and reset the counter
+        if(counter >= 90):
+            time.sleep(5*60+10)
+            counter=0
+        else:
+            counter=counter+1
         messages = session.getMessages(room,startDate,startIndex)
 except KeyError:
-    print("ERROR: invalid json recieved. Maybe we're done?\n")
+    print("ERROR: invalid json recieved. Maybe we're done? Or exceeded the rate limit? Counter: " + str(counter) + "\n")
     print messages
 
 print json.dumps(output, indent=4, separators=(',',': '))
